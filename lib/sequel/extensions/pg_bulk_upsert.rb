@@ -18,11 +18,12 @@ module Sequel
 
     def multi_insert_sql(columns, values)
       if duplicate_keys = @opts[:on_duplicate_key_update]
-        temp_table_name = create_temp_table_from_existing(@opts[:from])
-        upsert_on = @db.primary_key(@opts[:from])
+        from_table_name = @opts[:from].first # XXX How can we ensure theres only one?
+        temp_table_name = create_temp_table_from_existing(from_table_name)
+        upsert_on = @db.primary_key(from_table_name)
 
         sqls = clone(on_duplicate_key_update: nil).from(temp_table_name).multi_insert_sql(columns, values)
-        sqls << upsert_from_to_sql(temp_table_name, @opts[:from].first, upsert_on, duplicate_keys, columns)
+        sqls << upsert_from_to_sql(temp_table_name, from_table_name, upsert_on, duplicate_keys, columns)
       else
         super
       end
@@ -50,10 +51,12 @@ module Sequel
     def create_temp_table_from_existing(base_table)
       temp_table_name = :ble
 
+      columns_information = @db.schema(base_table)
+
       @db.create_table(temp_table_name, temp: true) do
-        primary_key :id
-        String :updatable_column
-        String :insertable_column
+        columns_information.each do |col, data|
+          column col, data[:db_type], primary_key: data[:primary]
+        end
       end
 
       temp_table_name

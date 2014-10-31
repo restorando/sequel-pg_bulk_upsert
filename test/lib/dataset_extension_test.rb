@@ -7,6 +7,16 @@ class DatasetExtensionTest < MiniTest::Test
       connect('mock://postgres').
       extension(:pg_bulk_upsert)
 
+    def @db.schema(table)
+      if table == :target
+        [
+          [:id, { primary: true, db_type: :serial }],
+          [:updatable_column,  { db_type: :text   }],
+          [:insertable_column, { db_type: :text   }]
+        ]
+      end
+    end
+
     @db.create_table(:target) do
       primary_key :id
       String :updatable_column

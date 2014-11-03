@@ -47,7 +47,7 @@ module Sequel
         target.from(target_name, source_name).
           where(Sequel.qualify(target_name, join_on) => Sequel.qualify(source_name, join_on)).
           returning(Sequel.qualify(target_name, join_on)).with_sql(:update_sql, update_hash)).
-        returning(Sequel.qualify(target_name, join_on)).insert_sql(source_ds)
+        returning(Sequel.qualify(target_name, join_on)).insert_sql(insert_columns, source_ds)
     end
 
     def create_temp_table_from_existing(base_table)

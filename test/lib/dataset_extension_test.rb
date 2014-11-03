@@ -34,9 +34,10 @@ class DatasetExtensionTest < MiniTest::Test
 
   def test_temp_table_creation
     sqls = do_upsert
+    temp_table_name   = extract_temp_table_name(sqls[0])
 
     temp_table_creation = sqls[0]
-    assert_equal temp_table_creation, %{CREATE TEMPORARY TABLE "ble" ("id" serial PRIMARY KEY, "updatable_column" text, "insertable_column" text)}
+    assert_equal temp_table_creation, %{CREATE TEMPORARY TABLE "#{temp_table_name}" ("id" serial PRIMARY KEY, "updatable_column" text, "insertable_column" text)}
   end
 
   def test_temp_table_batch_loading

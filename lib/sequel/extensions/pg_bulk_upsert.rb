@@ -32,8 +32,8 @@ module Sequel
     private
 
     def upsert_from_to_sql(source_name, target_name, join_on, update_columns, insert_columns)
-      target = @db[target_name]
-      source = @db[source_name]
+      target = @db.from(target_name)
+      source = @db.from(source_name)
       source_ds = source.
         select(*insert_columns).
         left_join(:update_cte, [join_on]).
@@ -51,7 +51,7 @@ module Sequel
     end
 
     def create_temp_table_from_existing(base_table)
-      temp_table_name = :ble
+      temp_table_name = "#{base_table}_tmp_#{Time.now.to_i}"
 
       columns_information = @db.schema(base_table)
 

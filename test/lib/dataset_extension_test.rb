@@ -52,11 +52,12 @@ class DatasetExtensionTest < MiniTest::Test
     temp_table_name   = extract_temp_table_name(sqls[0])
     temp_table_insert = strip_heredoc(<<-SQL).gsub("\n","")
       WITH "update_cte" AS
-       (UPDATE "target" SET "target"."updatable_column" = "#{temp_table_name}"."target" RETURNING ("id"))
-       INSERT INTO "target" SELECT ("updatable_column", "insertable_column")
+       (UPDATE "target" SET "updatable_column" = "#{temp_table_name}"."updatable_column"
+       FROM "#{temp_table_name}" WHERE ("target"."id" = "#{temp_table_name}"."id") RETURNING "target"."id")
+       INSERT INTO "target" SELECT "updatable_column", "insertable_column"
        FROM "#{temp_table_name}" LEFT JOIN "update_cte" USING ("id")
-       WHERE ("#{temp_table_name}"."id" IS NULL)
-       RETURNING "id"
+       WHERE ("update_cte"."id" IS NULL)
+       RETURNING "target"."id"
     SQL
 
     assert_equal temp_table_insert, sqls[3]

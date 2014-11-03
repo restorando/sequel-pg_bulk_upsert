@@ -20,7 +20,7 @@ module Sequel
       if duplicate_keys = @opts[:on_duplicate_key_update]
         from_table_name = @opts[:from].first # XXX How can we ensure theres only one?
         temp_table_name = create_temp_table_from_existing(from_table_name)
-        upsert_on = @db.primary_key(from_table_name)
+        upsert_on = @db.primary_key(from_table_name).to_sym
 
         sqls = clone(on_duplicate_key_update: nil).from(temp_table_name).multi_insert_sql(columns, values)
         sqls << upsert_from_to_sql(temp_table_name, from_table_name, upsert_on, duplicate_keys, columns)
@@ -35,17 +35,19 @@ module Sequel
       target = @db[target_name]
       source = @db[source_name]
       source_ds = source.
-        select(insert_columns).
+        select(*insert_columns).
         left_join(:update_cte, [join_on]).
-        where(Sequel.qualify(source_name, join_on) => nil)
+        where(Sequel.qualify(:update_cte, join_on) => nil)
 
       update_hash = update_columns.each_with_object({}) do |column, hash|
-        hash[Sequel.qualify(target_name, column)] = Sequel.qualify(source_name, target_name)
+        hash[column] = Sequel.qualify(source_name, column)
       end
 
       target.with(:update_cte,
-        target.returning([join_on]).with_sql(:update_sql, update_hash)).
-        returning(:id).insert_sql(source_ds)
+        target.from(target_name, source_name).
+          where(Sequel.qualify(target_name, join_on) => Sequel.qualify(source_name, join_on)).
+          returning(Sequel.qualify(target_name, join_on)).with_sql(:update_sql, update_hash)).
+        returning(Sequel.qualify(target_name, join_on)).insert_sql(source_ds)
     end
 
     def create_temp_table_from_existing(base_table)

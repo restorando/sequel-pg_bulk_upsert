@@ -37,7 +37,10 @@ class DatasetExtensionTest < MiniTest::Test
     temp_table_name   = extract_temp_table_name(sqls[0])
 
     temp_table_creation = sqls[0]
-    assert_equal temp_table_creation, %{CREATE TEMPORARY TABLE "#{temp_table_name}" ("id" serial PRIMARY KEY, "updatable_column" text, "insertable_column" text)}
+    assert_equal temp_table_creation, strip_heredoc(<<-SQL).gsub("\n", "")
+      CREATE TEMPORARY TABLE "#{temp_table_name}"
+       ("id" serial PRIMARY KEY, "updatable_column" text, "insertable_column" text) ON COMMIT DROP
+    SQL
   end
 
   def test_temp_table_batch_loading
@@ -51,7 +54,7 @@ class DatasetExtensionTest < MiniTest::Test
   def test_upsert_from_temp
     sqls = do_upsert
     temp_table_name   = extract_temp_table_name(sqls[0])
-    temp_table_insert = strip_heredoc(<<-SQL).gsub("\n","")
+    temp_table_insert = strip_heredoc(<<-SQL).gsub("\n", "")
       WITH "update_cte" AS
        (UPDATE "target" SET "updatable_column" = "#{temp_table_name}"."updatable_column"
        FROM "#{temp_table_name}" WHERE ("target"."id" = "#{temp_table_name}"."id") RETURNING "target"."id")
@@ -63,6 +66,13 @@ class DatasetExtensionTest < MiniTest::Test
     SQL
 
     assert_equal temp_table_insert, sqls[3]
+  end
+
+  def test_upsert_inside_transaction
+    sqls = do_upsert
+
+    assert_equal "BEGIN",  sqls[1]
+    assert_equal "COMMIT", sqls[4]
   end
 
   private

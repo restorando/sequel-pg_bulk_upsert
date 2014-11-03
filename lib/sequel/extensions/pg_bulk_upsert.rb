@@ -55,7 +55,7 @@ module Sequel
 
       columns_information = @db.schema(base_table)
 
-      @db.create_table(temp_table_name, temp: true) do
+      @db.create_table(temp_table_name, temp: true, on_commit: :drop) do
         columns_information.each do |col, data|
           column col, data[:db_type], primary_key: data[:primary]
         end

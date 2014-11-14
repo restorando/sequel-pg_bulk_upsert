@@ -8,22 +8,14 @@ module Sequel
       clone(on_duplicate_key_update: args)
     end
 
-    # def import(columns, values, opts=OPTS)
-    #   if @opts[:on_duplicate_key_update]
-    #     _bulk_upsert_import(columns, values, opts)
-    #   else
-    #     super
-    #   end
-    # end
-
     def multi_insert_sql(columns, values)
       if duplicate_keys = @opts[:on_duplicate_key_update]
-        from_table_name = @opts[:from].first # XXX How can we ensure theres only one?
+        from_table_name = @opts[:from].first # XXX How: can we ensure theres only one?
         temp_table_name = create_temp_table_from_existing(from_table_name)
-        upsert_on = @db.primary_key(from_table_name).to_sym
+        upsert_on = @db.primary_key(from_table_name) or raise "missing primary_key for #{from_table_name}"
 
         sqls = clone(on_duplicate_key_update: nil).from(temp_table_name).multi_insert_sql(columns, values)
-        sqls << upsert_from_to_sql(temp_table_name, from_table_name, upsert_on, duplicate_keys, columns)
+        sqls << upsert_from_to_sql(temp_table_name, from_table_name, upsert_on.to_sym, duplicate_keys, columns)
       else
         super
       end
@@ -51,11 +43,11 @@ module Sequel
     end
 
     def create_temp_table_from_existing(base_table)
-      temp_table_name = "#{base_table}_tmp_#{Time.now.to_i}"
+      temp_table_name = "#{base_table}_tmp_#{Time.now.strftime("%s%L")}"
 
       columns_information = @db.schema(base_table)
 
-      @db.create_table(temp_table_name, temp: true, on_commit: :drop) do
+      @db.create_table(temp_table_name, temp: true) do
         columns_information.each do |col, data|
           column col, data[:db_type], primary_key: data[:primary]
         end

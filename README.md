@@ -1,6 +1,8 @@
 # Sequel::Pg::Bulk::Upsert
 
-TODO: Write a gem description
+http://tapoueh.org/blog/2013/03/15-batch-update
+
+http://johtopg.blogspot.com.ar/2014/04/upsertisms-in-postgres.html
 
 ## Installation
 

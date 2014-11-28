@@ -7,10 +7,10 @@ Gem::Specification.new do |gem|
   gem.name          = "sequel-pg_bulk_upsert"
   gem.version       = Sequel::PgBulkUpsert::VERSION
   gem.authors       = ["Juan Manuel Barreneche"]
-  gem.email         = ["snipperme@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.email         = ["jbarreneche@restorando.com"]
+  gem.description   = %q{Implementation `on_duplicate_key_update(*...).multi_insert(*...)` for postgresql}
+  gem.summary       = %q{Implementation `on_duplicate_key_update(*...).multi_insert(*...)` for postgresql}
+  gem.homepage      = "https://github.com/restorando/sequel-pg_bulk_upsert"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

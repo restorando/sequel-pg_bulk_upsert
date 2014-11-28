@@ -58,7 +58,7 @@ class DatasetExtensionTest < MiniTest::Test
       WITH "update_cte" AS
        (UPDATE "target" SET "updatable_column" = "#{temp_table_name}"."updatable_column"
        FROM "#{temp_table_name}" WHERE ("target"."id" = "#{temp_table_name}"."id") RETURNING "target"."id")
-       INSERT INTO "target" (\"updatable_column\", \"insertable_column\")
+       INSERT INTO "target" ("updatable_column", "insertable_column")
        SELECT "updatable_column", "insertable_column"
        FROM "#{temp_table_name}" LEFT JOIN "update_cte" USING ("id")
        WHERE ("update_cte"."id" IS NULL)

@@ -4,7 +4,7 @@ class DatasetExtensionTest < MiniTest::Test
 
   def setup
     @db = Sequel.
-      connect('mock://postgres').
+      connect('mock://postgres', fetch: [{attname: :id}]).
       extension(:pg_bulk_upsert)
 
     def @db.schema(table)
@@ -80,7 +80,8 @@ class DatasetExtensionTest < MiniTest::Test
   def do_upsert(columns = @upsert_columns, data = @upsert_data)
     @ds.on_duplicate_key_update(:updatable_column).import(columns, data)
 
-    @db.sqls
+    # Returns sqls ignoring primary_key query
+    @db.sqls[1..-1]
   end
 
   def extract_temp_table_name(create_sql)

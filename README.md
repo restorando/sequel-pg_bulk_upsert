@@ -50,7 +50,7 @@ It consists in 3 parts:
 
 Add this line to your application's Gemfile:
 
-    gem 'sequel-pg-bulk-upsert'
+    gem 'sequel-pg_bulk_upsert'
 
 And then execute:
 
@@ -58,7 +58,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install sequel-pg-bulk-upsert
+    $ gem install sequel-pg_bulk_upsert
 
 ## Usage
 
